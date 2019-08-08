@@ -7,3 +7,6 @@ Route.post("users", "UserController.store");
 Route.post("sessions", "SessionController.store");
 
 Route.post("passwords", "ForgotPasswordController.store");
+
+Route.get("/files/:id", "FileController.show");
+Route.post("/files", "FileController.store");
