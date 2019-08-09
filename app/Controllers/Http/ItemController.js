@@ -1,9 +1,11 @@
-'use strict'
+"use strict";
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
+/** @type {typeof import('@adonisjs/lucid/src/Lucid/Model')} */
+const Item = use("App/Models/Item");
 /**
  * Resourceful controller for interacting with items
  */
@@ -17,19 +19,14 @@ class ItemController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
-  }
+  async index({ params, request, response, view }) {
+    const items = await Item.query()
+      .where("product_id", params.products_id)
+      .with("product")
+      .with("cover")
+      .fetch();
 
-  /**
-   * Render a form to be used for creating a new item.
-   * GET items/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
+    return items;
   }
 
   /**
@@ -40,7 +37,15 @@ class ItemController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store({ params, request, response }) {
+    const data = request.only(["size", "price", "file_id"]);
+
+    const item = await Item.create({
+      ...data,
+      product_id: params.products_id
+    });
+
+    return item;
   }
 
   /**
@@ -52,19 +57,10 @@ class ItemController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
-  }
+  async show({ params, request, response, view }) {
+    const item = await Item.findOrFail(params.id);
 
-  /**
-   * Render a form to update an existing item.
-   * GET items/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
+    return item;
   }
 
   /**
@@ -75,7 +71,15 @@ class ItemController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params, request, response }) {
+  async update({ params, request, response }) {
+    const item = await Item.findOrFail(params.id);
+    const data = request.only(["size", "price", "file_id"]);
+
+    item.merge(data);
+
+    await item.save();
+
+    return item;
   }
 
   /**
@@ -86,8 +90,11 @@ class ItemController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy ({ params, request, response }) {
+  async destroy({ params, request, response }) {
+    const item = await Item.findOrFail(params.id);
+
+    await item.delete();
   }
 }
 
-module.exports = ItemController
+module.exports = ItemController;

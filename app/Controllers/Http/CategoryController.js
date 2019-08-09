@@ -1,8 +1,11 @@
-'use strict'
+"use strict";
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
+
+/** @type {typeof import('@adonisjs/lucid/src/Lucid/Model')} */
+const Category = use("App/Models/Category");
 
 /**
  * Resourceful controller for interacting with categories
@@ -17,19 +20,13 @@ class CategoryController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
-  }
+  async index({ request, response, view }) {
+    const categories = await Category.query()
+      .with("products")
+      .with("cover")
+      .fetch();
 
-  /**
-   * Render a form to be used for creating a new category.
-   * GET categories/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
+    return categories;
   }
 
   /**
@@ -40,7 +37,13 @@ class CategoryController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  //, user_id: auth.user.id
+  async store({ request, response }) {
+    const data = request.only(["description", "time", "file_id"]);
+
+    const category = await Category.create({ ...data });
+
+    return category;
   }
 
   /**
@@ -52,19 +55,13 @@ class CategoryController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
-  }
+  async show({ params, request, response, view }) {
+    const category = await Category.findOrFail(params.id);
 
-  /**
-   * Render a form to update an existing category.
-   * GET categories/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
+    // await category.load("products");
+    await category.load("cover");
+
+    return category;
   }
 
   /**
@@ -75,7 +72,15 @@ class CategoryController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params, request, response }) {
+  async update({ params, request, response }) {
+    const category = await Category.findOrFail(params.id);
+    const data = request.only(["description", "time", "file_id"]);
+
+    category.merge(data);
+
+    await category.save();
+
+    return category;
   }
 
   /**
@@ -86,8 +91,11 @@ class CategoryController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy ({ params, request, response }) {
+  async destroy({ params, request, response }) {
+    const category = await Category.findOrFail(params.id);
+
+    await category.delete();
   }
 }
 
-module.exports = CategoryController
+module.exports = CategoryController;

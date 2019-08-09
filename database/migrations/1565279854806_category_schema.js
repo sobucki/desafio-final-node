@@ -10,7 +10,7 @@ class CategorySchema extends Schema {
       table.text("description").notNullable();
       table.integer("time").notNullable();
       table
-        .integer("cover_id")
+        .integer("file_id")
         .unsigned()
         .references("id")
         .inTable("files")

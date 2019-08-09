@@ -11,6 +11,10 @@ class Product extends Model {
   cover() {
     return this.belongsTo("App/Models/File");
   }
+
+  items() {
+    return this.hasMany("App/Models/Item")
+  }
 }
 
 module.exports = Product;

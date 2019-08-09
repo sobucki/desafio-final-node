@@ -1,9 +1,11 @@
-'use strict'
+"use strict";
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
+/** @type {typeof import('@adonisjs/lucid/src/Lucid/Model')} */
+const Product = use("App/Models/Product");
 /**
  * Resourceful controller for interacting with products
  */
@@ -17,19 +19,15 @@ class ProductController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
-  }
+  async index({ params, request, response, view }) {
+    const products = await Product.query()
+      .where("category_id", params.categories_id)
+      .with("category")
+      .with("cover")
+      .with("items")
+      .fetch();
 
-  /**
-   * Render a form to be used for creating a new product.
-   * GET products/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
+    return products;
   }
 
   /**
@@ -40,7 +38,20 @@ class ProductController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store({ params, request, response }) {
+    const data = request.only(["description", "file_id"]);
+    const items = request.input('items')
+
+    const product = await Product.create({
+      ...data,
+      category_id: params.categories_id
+    });
+    
+    if (items) {
+      await product.items().createMany(items)
+    }
+
+    return product;
   }
 
   /**
@@ -52,19 +63,10 @@ class ProductController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
-  }
+  async show({ params, request, response, view }) {
+    const product = await Product.findOrFail(params.id);
 
-  /**
-   * Render a form to update an existing product.
-   * GET products/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
+    return product;
   }
 
   /**
@@ -75,7 +77,15 @@ class ProductController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params, request, response }) {
+  async update({ params, request, response }) {
+    const product = await Product.findOrFail(params.id);
+    const data = request.only(["description", "file_id"]);
+
+    product.merge(data);
+
+    await product.save();
+
+    return product;
   }
 
   /**
@@ -86,8 +96,11 @@ class ProductController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy ({ params, request, response }) {
+  async destroy({ params, request, response }) {
+    const product = await Product.findOrFail(params.id);
+
+    await product.delete();
   }
 }
 
-module.exports = ProductController
+module.exports = ProductController;

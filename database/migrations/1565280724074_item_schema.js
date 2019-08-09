@@ -18,7 +18,7 @@ class ItemSchema extends Schema {
         .onUpdate("CASCADE")
         .onDelete("CASCADE");
       table
-        .integer("cover_id")
+        .integer("file_id")
         .unsigned()
         .references("id")
         .inTable("files")
