@@ -60,6 +60,14 @@ class ItemController {
   async show({ params, request, response, view }) {
     const item = await Item.findOrFail(params.id);
 
+    console.log(`teste`);
+    await item.load("product.cover");
+
+    // if (item.product) {
+    //   await item.product().load("cover");
+    // }
+    console.log("teste2");
+
     return item;
   }
 

@@ -39,7 +39,7 @@ class CategoryController {
    */
   //, user_id: auth.user.id
   async store({ request, response }) {
-    const data = request.only(["description", "time", "file_id"]);
+    const data = request.only(["name", "description", "time", "file_id"]);
 
     const category = await Category.create({ ...data });
 

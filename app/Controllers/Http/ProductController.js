@@ -40,15 +40,15 @@ class ProductController {
    */
   async store({ params, request, response }) {
     const data = request.only(["description", "file_id"]);
-    const items = request.input('items')
+    const items = request.input("items");
 
     const product = await Product.create({
       ...data,
       category_id: params.categories_id
     });
-    
+
     if (items) {
-      await product.items().createMany(items)
+      await product.items().createMany(items);
     }
 
     return product;
@@ -66,6 +66,7 @@ class ProductController {
   async show({ params, request, response, view }) {
     const product = await Product.findOrFail(params.id);
 
+    await product.load("cover");
     return product;
   }
 
