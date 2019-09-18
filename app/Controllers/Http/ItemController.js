@@ -22,7 +22,7 @@ class ItemController {
   async index({ params, request, response, view }) {
     const items = await Item.query()
       .where("product_id", params.products_id)
-      .with("product")
+      .with("product.cover")
       .with("cover")
       .fetch();
 
